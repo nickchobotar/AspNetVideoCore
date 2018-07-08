@@ -1,0 +1,272 @@
+launchSettings.json - The Properties folder in the Solution Explorer contains a file called 
+    launchSettings.json, which contains all the settings needed to launch the application. 
+    It contains IIS settings, as well as project settings, such as environment variables and 
+    the application URL.
+
+.csproj file - One major change from ASP.NET Core 1.0 is that the project.json file no longer exists; 
+    instead the installed NuGet packages are listed in the .csproj file. To open the .csproj file, you 
+    simply right click on the project node in the Solution Explorer and select Edit AspNetVideoCore.csproj
+    You can add NuGet packages by adding PackageReference nodes to the file .csproj, or by opening the NuGet Package Manager.
+
+Microsoft.AspNetCore. - All that is installed when the project is created. It contains references to the most frequently used NuGet packages
+
+Startup.cs :
+    The Configure and ConfigureServices methods in the Startup class handle most of the application configuration. 
+    * The ConfigureServices method is where you set up the services, such as MVC or register your own Dependency Injection (DI);
+    * Configure method (aka MiddleWare). The HTTP processing pipeline that defines how the application responds to requests;
+
+-------------- MIDDLEWARE SECTION ---------------------------
+Middleware is a series of components executed in order. For example: 
+    1) Logger will log information and pass the processing onto the next middleware component in the pipeline. 
+    2) The next middleware component might be an authorizer that can look at access tokens or cookies 
+	   to determine if the request will proceed (return error or redirect to login page)
+    3) If the request is authorized, it will be passed to the next middleware component like a routing component.
+
+IApplicationBuilder
+The IApplicationBuilder interface injected into the Startup class’s Configure method is used when setting up the middleware pipeline
+
+"Run" middleware  - means that it is the end of the pipeline. 
+    (context)=> object passed into Run method sheds light on requests through Request object or e.g. print out string thr Response object
+
+Most middleware components will be added by calling a method beginning with Use on the app object, such as app.UseDeveloperExceptionPage.
+
+
+UseMvcWithDefaultRoute method is   built-in support for default routing for the HomeController
+
+-------------- END OF MIDDLEWARE SECTION -----------------------
+
+appsettings.json - Configuaration file and does not come by default and should created by adding json ASP.NET Configuration File template.
+			   The file could be named anything, but appsettings is convention for this type of configuration file.
+			   IMPORTANT!!! To read configuration information from the appsettings.json file, you have to add a constructor to the Startup class
+
+
+Dependency Injection 
+To use dependency injection -  That is, pass in the interface as a parameter to the method
+    Take advantage of dependency injection to make data available in a constructor by using a service component.
+    One big benefit of implementing a service is that its interface can be used to implement different components
+
+
+IHostingEnvironment service - handles different environments, such as development, staging, and production.
+
+When adding a service to the service collection, you can choose between several Add methods. Here’s a rundown of the most commonly used.
+* Singleton -  creates a single instance that is used throughout the application. It creates the instance when the first dependency-injected object is created.
+* Scoped  -   services are lifetime services, created once per request within the scope. It is equivalent to Singleton in the current scope. In other words, 
+    the same instance is reused within the same HTTP request
+* Transient -  services are created each time they are requested and won’t be reused. This lifetime works best for lightweight, stateless services
+
+
+HTTP 500 Error - This page isn’t working error  ->  Friendly error for the users
+
+Controller -  is responsible for handling any HTTP requests that come to the application and build a Model which is sent to the Views
+    * The decision to send the request to a controller action is determined by the URL.
+    ATTENTION!  Controller is a C# class, and an action is a public method in a controller class.
+	   ** parameter can be any value that can be represented as a string
+	   ** e.g. URL contains /Home/Index/123  = /Home controller class/public action (method) /parameter
+                                                     
+View - is responsible for transforming that data into HTML.
+
+Routing Types: 
+    1) convention-based routing
+
+    app.UseMvc(routes =>
+	   {
+	   routes.MapRoute(
+	   name: "default",
+	   template: "{controller=Home}/{action=Index}/{id?}");
+    });
+
+    2) attribute routing (page.41)
+
+    [Route("[controller]/[action]")]
+	 public class HomeController
+	   {
+	   }
+
+-------- ActionResult  / IActionResult ----------------
+
+“ActionResult is an abstract parent class from which ViewResult class has been derived”.
+
+
+1. ViewResult - Renders a specified / particular view to the response stream whereas ActionResult can return all 11 views --- APPEARS TO BE THE MOST USED. 
+
+2. PartialViewResult - Renders a specified partial view to the response stream
+3. EmptyResult - An empty response is returned
+4. RedirectResult - Performs an HTTP redirection to a specified URL
+5. RedirectToRouteResult - Performs an HTTP redirection to a URL that is determined by the routing engine, based on given route data
+6. JsonResult - Serializes a given object to JSON format
+7. JavaScriptResult - Returns a piece of JavaScript code that can be executed on the client
+8. ContentResult - Writes content to the response stream without requiring a view
+9. FileContentResult - Returns a file to the client
+10. FileStreamResult - Returns a file to the client, which is provided by a Stream
+11. FilePathResult - Returns a file to the client
+
+
+we are passing a boolean flag whether it’s an HTML view or not and depending on the same, we are streaming different views.
+
+public ActionResult DynamicView(bool IsHtmlView)
+{
+   if (IsHtmlView)
+     return View(); // returns simple ViewResult
+   else
+     return Json(); // returns JsonResult view
+}
+
+https://www.codeproject.com/Articles/835758/Difference-Between-ViewResult-and-ActionResult-in
+
+
+IActionResult
+
+IActionResult has more return types than ActionResult. For ex: If you want to return HttpNotFound you have to use IActionResult return type. 
+
+IActionResult allows a wider range of return types, including any custom code that implements the IActionResult interface.
+ActionResult is limited only to those classes which extend the ActionResult abstract class 
+    (which you could also do with custom code, but using an interface allows 
+	   for something like multiple inheritance, while extending a class does not).
+
+    IActionResult return type returns many types of data, such as objects and views. 
+  ATTENTION!  To gain access to IActionResult or derivations thereof, the controller class must inherit the Controller class.
+	   Other classes like IActionResult that return data: 
+		  * ContentResult - return simple content e.g. string. 
+		  * ObjectType - used in Web API applications and return actual object like JSON script
+
+
+
+The main advantage is that you can return error/status codes or redirects/resource urls.
+
+For example:
+
+public IActionResult Get(integer id) 
+{
+    var user = db.Users.Where(u => u.UserId = id).FirstOrDefault();
+
+    if(user == null) 
+    {
+        // Returns HttpCode 404
+        return NotFound();
+    }
+
+    // returns HttpCode 200
+    return ObjectOk(user);
+}
+
+
+-------- End of ActionResult ----------------
+
+
+Views
+To render the view, a ViewResult is returned from the controller action using the View method
+  
+  public ViewResult Index()   --- ViewResult
+        {
+            var model = new Video { Id = 1, Title = "Shrek" };
+            return View (model);  --- View method
+        }
+
+    ASP.NET will look for a view with the same name as the action that produced the result
+	It will look in two places, both subfolders, to a folder called Views:
+	   - the first is a folder with the same name as the controller class, 
+	   - the second a folder named Shared
+
+---------- End Views -----------------
+
+List<Video>. Note that a List collection isn’t thread safe, and should be used with caution in web applications
+
+Entity is a class used to define a database table.
+
+---------------- VIEW MODEL ----------------
+
+A view model is used to transport data from the controller to the view
+A view model is never used to directly update the database. 
+    To update the database the data from the view model is added to an entity model, which then in turn updates the database table.
+
+ A view model can carrier data from various entities or data bases
+
+--------------- @model vs @Model ------------
+@model directive to access the model class 
+    @Model to access the model object. you don’t add the @-sign when already inside Razor code, but you use it when in HTML.
+
+@foreach (var video in Model)  ---- > Model is not preceeded with @
+       {
+	   <tr> 
+	      <td>@video.Id</td> 
+		  <td>@video.Title</td>
+	   </tr>
+    }
+--------------- @model vs @Model ------------
+
+
+HTTP GET & POST
+The HTTP GET Create action method renders the Create view to the browser, 
+    displaying the necessary controls to create a new video and to post the form to the server.
+
+
+Adding the HTTP POST Create Action
+A <form> element is used when a user should enter data in a view. 
+There are a few steps that are performed when a user posts data. 
+The first you already know: the user sends an HTTP request to the HTTP GET action in the controller, 
+    which fetches the necessary data after which the view is rendered.
+
+To handle the form’s post back to the server, an HTTP POST version of the action method is called with the form values.
+The names of the form controls are matched against the model properties or parameters available in the action’s parameter list.
+The POST action then uses that data to create, update, or delete data in the data source.
+
+
+
+C# Anonymous Type:
+Anonymous type, as the name suggests, is a type that doesn't have any name. 
+C# allows you to create an object with the new keyword without defining its class. 
+The implicitly typed variable- var is used to hold the reference of anonymous types.
+
+myAnonymousType is an object of anonymous type created using the new keyword and object initializer syntax 
+
+Example: Anonymous type
+static void Main(string[] args)
+{
+    var myAnonymousType = new { firstProperty = "First", 
+                                secondProperty = 2, 
+                                thirdProperty = true 
+                              };
+}
+
+or
+
+in ASP.NET as a return type  --- >  return RedirectToAction("Details", new { id = video.Id });
+
+
+
+Data Annotations
+Data annotations are attributes you add to properties in a model, to enforce rules about them.
+You can specify that a field is required or must have a maximum number of characters. 
+The text displayed in a label is normally the property name, but that can be overridden with the [Display] attribute.
+[Required]
+[MaxLength(80)]
+Or
+[Required, MaxLength(80)]
+
+
+--> 5. Entity Framework
+
+Add a data context class that inherits from the DbContext class. 
+This class will be the con-text that you use to interact with the database.
+To add a table to the database, the table’s entity class must be added as a DbSet property in the context class.
+
+first migration - Add-Migration command.
+database can be generated with the Update-Database command.
+
+If you make any changes to the database, like adding or changing columns or tables,
+    execute the Add-Migration and Update-Database commands again .
+
+----> User Secrets
+
+The setup for User Secrets has been incorporated into the new BuildWebHost method in the Program.cs file,
+    which means that you no longer have to add any configuration for it in the Startup class.
+You can use User Secrets to store sensitive data locally in a file called secrets.json,
+    which is stored outside the solution (do not commit). 
+Store the connection string to the database securely in the secrets.json file.
+It also renders the appsettings.json obsolete for storing secret or sensitive data
+
+----> AddDbContext 
+
+AddDbContext method to be able to add the context to the services collection, 
+the VideoDbContext must have a constructor with a DbContextOptions<VideoDbContext> parameter, 
+which passes the parameter object to its base constructor.
