@@ -270,3 +270,30 @@ It also renders the appsettings.json obsolete for storing secret or sensitive da
 AddDbContext method to be able to add the context to the services collection, 
 the VideoDbContext must have a constructor with a DbContextOptions<VideoDbContext> parameter, 
 which passes the parameter object to its base constructor.
+
+
+--> RAZOR VIEWS
+
+---->_Layout view. 
+@RenderSection -  method can be used to render specific sections of HTML from the content view in the _Layout view.
+@RenderBody - responsible for rendering the different content views the user navigates to, such as the Index and the Details views.
+@ViewBag in the _Layout view is a dynamic object that you can use to send data from the server to the view.
+
+
+Ctrl+E, D keyboard command to format the HTML.
+
+_ViewStart.cshtml. 
+This file is executed before any other views, but it has no HTML output. 
+One purpose it has is to remove duplicate code from code blocks in the views, like the Layout declaration.
+Instead of declaring the location of the _Layout view in each view, it can be placed inside the _ViewStart view.
+You can assign null to the Layout property in a specific view to stop any layout view from being used with the view.
+
+_ViewImports.cshtml
+add using statements that will be used by all the views
+ 
+----> Tag Helpers
+@addTagHelper directive to the _ViewImports view, or in specific views where you want to use them.
+The first parameter, the asterisk, specifies that all Tag Helpers in that namespace should be available. 
+You can change this to a specific Tag Helper if you don’t want to import all helpers. 
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
