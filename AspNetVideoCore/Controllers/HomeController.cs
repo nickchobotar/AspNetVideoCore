@@ -1,13 +1,13 @@
-﻿using AspNetVideoCore.Models;
+﻿using AspNetVideoCore.Entities;
 using AspNetVideoCore.Services;
 using AspNetVideoCore.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Linq;
-using AspNetVideoCore.Entities;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AspNetVideoCore.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
 
@@ -20,6 +20,7 @@ namespace AspNetVideoCore.Controllers
 
         //using LINQ Select method in the Index action to convert each video into a VideoViewModel object, and store it in the model field "var model".
         //fetch the video from the _videos collection using its id, and then convert the genre id to the name for the corresponding value in the Genres enum.
+        [AllowAnonymous]
         public ViewResult Index()
         {
             var model = _videos.GetAll().Select(video =>   // GetAll() from IVideoData  -- > IEnumerable<Video> GetAll();          
@@ -45,8 +46,6 @@ namespace AspNetVideoCore.Controllers
             {
                 return RedirectToAction("Index");
             }
-
-
             return View(
               new VideoViewModel
               {                  
@@ -69,22 +68,45 @@ namespace AspNetVideoCore.Controllers
         public IActionResult Create(VideoEditViewModel model)
         {
             if (ModelState.IsValid)
-            {
-
-
+            {                
                 var video = new Video
                 {
                     Title = model.Title,
                     Genre = model.Genre
                 };
 
-                _videos.Add(video);  // Add is the method from IVideoData  ---  void Add(Video newVideo); 
+                _videos.Add(video);  // Add is the method from IVideoData  ---  void Add(Video newVideo);
+                _videos.Commit(); // ???
 
                 return RedirectToAction("Details", new { id = video.Id });
             }
             return View();
 
-        }      
+        }
+
+
+        [HttpGet]
+        public IActionResult Edit(int id)
+        {
+            var video = _videos.Get(id);
+            if (video == null) return RedirectToAction("Index");
+            return View(video);
+        }
+
+
+        [HttpPost]
+        public IActionResult Edit(int id, VideoEditViewModel model)
+        {
+            var video = _videos.Get(id);
+            if (video == null || !ModelState.IsValid) return View(model);
+            video.Title = model.Title;
+            video.Genre = model.Genre;
+            _videos.Commit();
+            return RedirectToAction("Details", new { id = video.Id });
+        }
+
+
+
 
     }
 
@@ -93,20 +115,7 @@ namespace AspNetVideoCore.Controllers
 
 
 
-    //public HomeController(IVideoData videos)
-    //{
-    //    _videos = videos;
-    //}
-
-
-    //public ViewResult Index()
-    //{
-    //    var model = _videos.GetAll();
-    //    return View (model);
-    //}        
-
 
 }
 
     
-

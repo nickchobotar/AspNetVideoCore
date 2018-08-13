@@ -1,40 +1,15 @@
-﻿@*@model IEnumerable<AspNetVideoCore.ViewModels.VideoViewModel>*@
-
+﻿
 @model IEnumerable<VideoViewModel>
 
-@{
-    ViewBag.Title = "Home";
-    //Layout = "~/Views/Shared/_Layout.cshtml"; /*beginning with the tilde(~) sign*/
+@{ ViewBag.Title = "Home"; }
+
+
+@*foreach loop that renders the partial view.*@
+
+@foreach (var video in Model)
+{
+    @Html.Partial("_Video", video);
 }
-
-
-<table>
-    @foreach (var video in Model)
-    {
-        <tr>
-            @*<td>@Html.ActionLink(video.Id.ToString(), "Details", new { id = video.Id })</td>*@
-            <td><a asp-action="Details" asp-route-id="@video.Id">Details</a></td>
-            <td>@video.Title</td>
-            <td>@video.Genre</td>
-            <td><a asp-action="Details" asp-route-id="@video.Id">Details</a></td>
-            <td><a asp-action="Edit" asp-route-id="@video.Id">Edit</a></td>
-        </tr>
-    }
-</table>
-
-<a asp-action="Create">Create</a>
-
-
-@section footer
-    {
-    <div> This is the Index footer </div>
-}
-
-
-@*
-    <td>@Html.ActionLink(video.Id.ToString(), "Details", new { id = video.Id })</td>
-
-    Now open the Index view and add links for the video ids. To achieve this, you must pass in an
-        anonymous object as an extra parameter, and add an id property to that object.
-
-*@
+<div>
+    <a asp-action="Create">Create</a>
+</div>

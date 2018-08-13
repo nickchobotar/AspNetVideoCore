@@ -11,6 +11,8 @@ using System.IO;
 using AspNetVideoCore.Services;
 using AspNetVideoCore.Data;
 using Microsoft.EntityFrameworkCore;
+using AspNetVideoCore.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace AspNetVideoCore
 {
@@ -44,8 +46,12 @@ namespace AspNetVideoCore
             services.AddSingleton(provider => Configuration);
             services.AddSingleton<IMessageService, ConfigurationMessageService>();
 
+            //create instances of the SqlVideoData class
+            //changed the method from AddSingleton to AddScoped for the service to work with Entity Framework
             services.AddScoped<IVideoData, SqlVideoData>();
 
+            services.AddIdentity<User, IdentityRole>()
+                .AddEntityFrameworkStores<VideoDbContext>();
 
 
 
@@ -57,6 +63,8 @@ namespace AspNetVideoCore
          
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IMessageService msg)
         {
+            app.UseAuthentication();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -246,8 +246,8 @@ Or
 
 --> 5. Entity Framework
 
-Add a data context class that inherits from the DbContext class. 
-This class will be the con-text that you use to interact with the database.
+Add a data context class that inherits from the DbContext class   
+This class will be the context that you use to interact with the database.
 To add a table to the database, the table’s entity class must be added as a DbSet property in the context class.
 
 first migration - Add-Migration command.

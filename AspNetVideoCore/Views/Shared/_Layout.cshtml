@@ -1,17 +1,20 @@
-﻿<!DOCTYPE html>
+﻿
+<!DOCTYPE html>
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag.Title</title>
 </head>
 <body>
+<div>
     <div>
-        @RenderBody()
+        @await Html.PartialAsync("_LoginLinks")
     </div>
-
+    @RenderBody()
+</div>
     <footer>
-        @RenderSection("footer", false)
+        @RenderSection("footer", false) 
+        @await Component.InvokeAsync("Message")
     </footer>
-
 </body>
 </html>
